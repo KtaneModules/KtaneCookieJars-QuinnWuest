@@ -658,7 +658,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1768119643875778}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.02, y: 0.015, z: 0.07}
+  m_LocalPosition: {x: -0.02, y: 0.0151, z: 0.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4583570247387626}
@@ -1222,7 +1222,7 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1783506224899282}
-  m_Mesh: {fileID: 4300000, guid: 1c46642b7f907d844bcdfcca8625afdd, type: 3}
+  m_Mesh: {fileID: 4300002, guid: 57bf7933dbd463449b015d2b27a1c328, type: 3}
 --- !u!33 &33373446345816660
 MeshFilter:
   m_ObjectHideFlags: 1
@@ -1505,9 +1505,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 1494891251723984}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03b456d20b351c24595c23a27042d042, type: 3}
+  m_Script: {fileID: 11500000, guid: ef71b591d57fd6643a3be34928dba3f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Module: {fileID: 114268968184938564}
+  Boss: {fileID: 114961568918720930}
+  Audio: {fileID: 114792527877855124}
+  Info: {fileID: 114906446637080784}
+  jar: {fileID: 114543844577411362}
+  left: {fileID: 114182887322011312}
+  right: {fileID: 114237508690686978}
+  cookieAmountText: {fileID: 102932741876968588}
+  jarText: {fileID: 102867890833823790}
+  leds:
+  - {fileID: 23535224148616536}
+  - {fileID: 23809857309678840}
+  - {fileID: 23873858883831658}
+  - {fileID: 23993553444354304}
+  - {fileID: 23209107630715534}
+  unlit: {fileID: 2100000, guid: d5c5d58d087a7324caba7bd849b20759, type: 2}
+  lit: {fileID: 2100000, guid: 12942afcf9051854e825c003fef9d8d4, type: 2}
+  jarTransform: {fileID: 4293318569948358}
 --- !u!114 &114237508690686978
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1776,27 +1794,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1494891251723984}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6325f1d7c3e66ec4d8b0293c1469fd89, type: 3}
+  m_Script: {fileID: 11500000, guid: 96a2fc4ae3e690a498a0d85a2b5e0b99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Module: {fileID: 114268968184938564}
-  Boss: {fileID: 114207375352762146}
-  Audio: {fileID: 114792527877855124}
-  Info: {fileID: 114906446637080784}
-  jar: {fileID: 114543844577411362}
-  left: {fileID: 114182887322011312}
-  right: {fileID: 114237508690686978}
-  cookieAmountText: {fileID: 102932741876968588}
-  jarText: {fileID: 102867890833823790}
-  leds:
-  - {fileID: 23535224148616536}
-  - {fileID: 23809857309678840}
-  - {fileID: 23873858883831658}
-  - {fileID: 23993553444354304}
-  - {fileID: 23209107630715534}
-  unlit: {fileID: 2100000, guid: d5c5d58d087a7324caba7bd849b20759, type: 2}
-  lit: {fileID: 2100000, guid: 12942afcf9051854e825c003fef9d8d4, type: 2}
-  jarTransform: {fileID: 4293318569948358}
 --- !u!114 &114993448791323082
 MonoBehaviour:
   m_ObjectHideFlags: 1

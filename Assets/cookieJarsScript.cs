@@ -22,40 +22,29 @@ public class cookieJarsScript : MonoBehaviour
     private int _moduleId;
     private bool solved;
 
-    private int[] cookies = { 99, 99, 99 };
+    private readonly int[] cookies = { 99, 99, 99 };
     private readonly string[] cookieNames = { "chocolate\nchip cookies", "sugar\ncookies", "m&m\ncookies", "oatmeal\nraisin\ncookies", "snickerdoodles", "peanut\nbutter\ncookies", "fortune\ncookies",
                                               "butter\ncookies", "gingerbread\ncookies", "OREOs" };
-    private readonly string[] debugCookies = { "chocolate chip", "sugar", "m&m", "oatmeal raisin", "snickerdoodle", "peanut butter", "fortune", "butter", "gingerbread", "OREO" };
+    private readonly string[] cookieNamesLog = { "chocolate chip", "sugar", "m&m", "oatmeal raisin", "snickerdoodle", "peanut butter", "fortune", "butter", "gingerbread", "OREO" };
     private int shownJar = 0;
-    private int[] cookieAmounts = { 0, 0, 0 };
+    private readonly int[] cookieAmounts = { 0, 0, 0 };
     private int lastEaten, lastLastEaten;
     private int hunger = 0;
 
-    private bool[] correctBtns = { false, false, false };
+    private readonly bool[] correctBtns = { false, false, false };
     private int highestCookie = 0, secondHighestCookie = 0, lowestCookie;
 
     int solves = 0;
-    private readonly string[] ignoredModulesList = { "Forget Me Not", "Forget Everything", "Souvenir", "The Time Keeper", "Turn the Key", "The Swan", "Simon's Stages", "Cookie Jars" };
-    private string[] ignoredModules { get { return Boss.GetIgnoredModules(Module, ignoredModulesList); } }
+    private string[] ignoredModules;
     private bool tpCorrect = false;
 
     void Start()
     {
         _moduleId = _moduleIdCounter++;
-        Module.OnActivate += SetUpButtons;
-
-        GenerateModule();
-    }
-
-    void SetUpButtons()
-    {
         jar.OnInteract += delegate ()
         {
             if (!solved)
-            {
                 EatCookie();
-            }
-
             jar.AddInteractionPunch();
             return false;
         };
@@ -63,10 +52,7 @@ public class cookieJarsScript : MonoBehaviour
         left.OnInteract += delegate ()
         {
             if (!solved)
-            {
                 ChangeJar(-1);
-            }
-
             left.AddInteractionPunch();
             Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Module.transform);
             return false;
@@ -75,20 +61,23 @@ public class cookieJarsScript : MonoBehaviour
         right.OnInteract += delegate ()
         {
             if (!solved)
-            {
                 ChangeJar(1);
-            }
-
             right.AddInteractionPunch();
             Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Module.transform);
             return false;
         };
 
-        leds[0].material = unlit;
-        leds[1].material = unlit;
-        leds[2].material = unlit;
-        leds[3].material = unlit;
-        leds[4].material = unlit;
+        for (int i = 0; i < 5; i++)
+            leds[i].material = unlit;
+        StartCoroutine(Init());
+    }
+
+    private IEnumerator Init()
+    {
+        yield return null;
+        if (ignoredModules == null)
+            ignoredModules = Boss.GetIgnoredModules("Cookie Jars", new string[] { "Cookie Jars" });
+        GenerateModule();
     }
 
     void EatCookie()
@@ -106,46 +95,34 @@ public class cookieJarsScript : MonoBehaviour
                 lastLastEaten = lastEaten;
                 lastEaten = cookies[shownJar];
                 tpCorrect = true;
-                DebugMsg("You ate a " + debugCookies[cookies[shownJar]] + " cookie. That was right!");
+                Debug.LogFormat("[Cookie Jars #{0}] You ate a{2} {1} cookie. That was right!", _moduleId, cookieNamesLog[cookies[shownJar]], cookieNamesLog[cookies[shownJar]] == "OREO" ? "n" : "");
                 cookieAmounts[shownJar]--;
                 hunger = 0;
                 Audio.PlaySoundAtTransform("OmNom", Module.transform);
 
-                leds[0].material = unlit;
-                leds[1].material = unlit;
-                leds[2].material = unlit;
-                leds[3].material = unlit;
-                leds[4].material = unlit;
+                for (int i = 0; i < 5; i++)
+                    leds[i].material = unlit;
 
                 if (cookieAmounts[shownJar] == 0)
-                {
                     cookieAmountText.text = "[ No cookies! :( ]";
-                }
 
                 else if (cookieAmounts[shownJar] == 1)
-                {
                     cookieAmountText.text = "[ 1 cookie! :| ]";
-                }
 
                 else
-                {
                     cookieAmountText.text = "[ " + cookieAmounts[shownJar] + " cookies! :) ]";
-                }
 
                 if (cookieAmounts[0] == 0 && cookieAmounts[1] == 0 && cookieAmounts[2] == 0)
                 {
                     Module.HandlePass();
 
-                    DebugMsg("You ate all the cookies and solved the module!");
+                    Debug.LogFormat("[Cookie Jars #{0}] You ate all the cookies and solved the module!", _moduleId);
 
                     jarText.text = "GG!";
                     cookieAmountText.text = "[ No cookies!!! D: ]";
 
-                    leds[0].material = lit;
-                    leds[1].material = lit;
-                    leds[2].material = lit;
-                    leds[3].material = lit;
-                    leds[4].material = lit;
+                    for (int i = 0; i < 5; i++)
+                        leds[i].material = lit;
 
                     solved = true;
                 }
@@ -153,7 +130,7 @@ public class cookieJarsScript : MonoBehaviour
 
             else
             {
-                DebugMsg("You ate a " + debugCookies[cookies[shownJar]] + " cookie. You got food poisoning and died! STRIKE!");
+                Debug.LogFormat("[Cookie Jars #{0}] You ate a{2} {1} cookie. You got food poisoning and died! STRIKE!", _moduleId, cookieNamesLog[cookies[shownJar]], cookieNamesLog[cookies[shownJar]] == "OREO" ? "n" : "");
                 hunger = 0;
 
                 Module.HandleStrike();
@@ -164,34 +141,14 @@ public class cookieJarsScript : MonoBehaviour
 
     void ChangeJar(int changeNum)
     {
-        shownJar += changeNum;
-
-        if (shownJar < 0)
-        {
-            shownJar += 3;
-        }
-
-        if (shownJar > 2)
-        {
-            shownJar -= 3;
-        }
-
+        shownJar = (((shownJar + changeNum) % 3) + 3) % 3;
         StartCoroutine("Spin", changeNum);
-
         if (cookieAmounts[shownJar] == 0)
-        {
             cookieAmountText.text = "[ No cookies! :( ]";
-        }
-
         else if (cookieAmounts[shownJar] == 1)
-        {
             cookieAmountText.text = "[ 1 cookie! :| ]";
-        }
-
         else
-        {
             cookieAmountText.text = "[ " + cookieAmounts[shownJar] + " cookies! :) ]";
-        }
     }
 
     void GenerateModule()
@@ -213,23 +170,21 @@ public class cookieJarsScript : MonoBehaviour
             if (cookies[i] < cookies[(i + 1) % 3] && cookies[i] < cookies[(i + 2) % 3])
             {
                 highestCookie = i;
-                DebugMsg("The " + cookieNames[cookies[i]] + " are the highest on the list.");
+                Debug.LogFormat("[Cookie Jars #{0}] The {1} are the highest on the list.", _moduleId, cookieNamesLog[cookies[i]]);
             }
 
             else if (cookies[i] < cookies[(i + 1) % 3] || cookies[i] < cookies[(i + 2) % 3])
             {
                 secondHighestCookie = i;
-                DebugMsg("The " + cookieNames[cookies[i]] + " are the second highest on the list.");
+                Debug.LogFormat("[Cookie Jars #{0}] The {1} are the second highest on the list.", _moduleId, cookieNamesLog[cookies[i]]);
             }
 
             else
             {
                 lowestCookie = i;
-                DebugMsg("The " + cookieNames[cookies[i]] + " are the lowest on the list.");
+                Debug.LogFormat("[Cookie Jars #{0}] The {1} are the lowest on the list.", _moduleId, cookieNamesLog[cookies[i]]);
             }
         }
-
-        Debug.LogFormat(string.Join(",", cookies.Select(x => x.ToString()).ToArray()));
 
         float averageCookies = Info.GetSolvableModuleNames().Count / 10f;
         int slightlyLessAccurateAverageCookies = Info.GetSolvableModuleNames().Count / 10;
@@ -269,34 +224,19 @@ public class cookieJarsScript : MonoBehaviour
         jarText.text = cookieNames[cookies[shownJar]];
 
         if (cookieAmounts[shownJar] == 0)
-        {
             cookieAmountText.text = "[ No cookies! :( ]";
-        }
-
         else if (cookieAmounts[shownJar] == 1)
-        {
             cookieAmountText.text = "[ 1 cookie! :| ]";
-        }
-
         else
-        {
             cookieAmountText.text = "[ " + cookieAmounts[shownJar] + " cookies! :) ]";
-        }
 
         lastEaten = Info.GetSerialNumberNumbers().First();
         lastLastEaten = Info.GetSerialNumberNumbers().Skip(1).First();
 
         for (int i = 0; i < 3; i++)
-        {
-            DebugMsg("One of the jars has " + cookieAmounts[i] + " " + cookieNames[cookies[i]].Replace("\n", " ") + " inside.");
-        }
+            Debug.LogFormat("[Cookie Jars #{0}] One of the jars has {1} {2} inside.", _moduleId, cookieAmounts[i], cookieNames[cookies[i]].Replace("\n", " "));
 
-        DebugMsg("The last eaten cookie was a " + debugCookies[lastEaten] + " cookie and the cookie eaten before that was a " + debugCookies[lastLastEaten] + " cookie.");
-    }
-
-    void DebugMsg(string msg)
-    {
-        Debug.LogFormat("[Cookie Jars #{0}] {1}", _moduleId, msg.Replace("\n", " "));
+        Debug.LogFormat("[Cookie Jars #{0}] The last eaten cookie was a{3} {1} cookie and the cookie eaten before that was a{4} {2} cookie.", _moduleId, cookieNamesLog[lastEaten], cookieNamesLog[lastLastEaten], cookieNamesLog[lastEaten] == "OREO" ? "n" : "", cookieNamesLog[lastLastEaten] == "OREO" ? "n" : "");
     }
 
     void CheckCookies(int numSolved)
@@ -304,83 +244,23 @@ public class cookieJarsScript : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             correctBtns[i] = false;
-
             if (cookieAmounts[i] > 0)
-            {
-                if (cookies[i] == 0 && lastEaten != lastLastEaten)
-                {
+                if (cookies[i] == 0 && lastEaten != lastLastEaten || cookies[i] == 1 && lastEaten == lastLastEaten || cookies[i] == 2 && lastEaten < lastLastEaten || cookies[i] == 3 && lastEaten > lastLastEaten || cookies[i] == 4 && lastEaten == 4 || cookies[i] == 5 && lastEaten != 5 || cookies[i] == 6 && lastEaten % 2 == numSolved % 2 || cookies[i] == 7 && lastEaten % 2 != numSolved % 2 || cookies[i] == 8 && cookieAmounts[i] % 2 == numSolved % 2 || cookies[i] == 9 && cookieAmounts[i] % 2 != numSolved % 2)
                     correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 1 && lastEaten == lastLastEaten)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 2 && lastEaten < lastLastEaten)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 3 && lastEaten > lastLastEaten)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 4 && lastEaten == 4)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 5 && lastEaten != 5)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 6 && lastEaten % 2 == numSolved % 2)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 7 && lastEaten % 2 != numSolved % 2)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 8 && cookieAmounts[i] % 2 == numSolved % 2)
-                {
-                    correctBtns[i] = true;
-                }
-
-                else if (cookies[i] == 9 && cookieAmounts[i] % 2 != numSolved % 2)
-                {
-                    correctBtns[i] = true;
-                }
-            }
         }
 
         if (!correctBtns.Contains(true))
         {
             if (cookieAmounts[highestCookie] > 0)
-            {
                 correctBtns[highestCookie] = true;
-            }
-
             else if (cookieAmounts[secondHighestCookie] > 0)
-            {
                 correctBtns[secondHighestCookie] = true;
-            }
-
             else
-            {
                 correctBtns[lowestCookie] = true;
-            }
         }
 
         for (int i = 0; i < 3; i++)
-        {
-            DebugMsg("Can " + cookieNames[cookies[i]] + " be eaten? " + correctBtns[i]);
-        }
+            Debug.LogFormat("[Cookie Jars #{0}] Can {1} be eaten? {2}", _moduleId, cookieNamesLog[cookies[i]], correctBtns[i] ? "Yes!" : "No!");
     }
 
     private void Update()
@@ -391,36 +271,13 @@ public class cookieJarsScript : MonoBehaviour
             solves++;
             hunger++;
 
-            if (hunger == 1)
-            {
-                leds[0].material = lit;
-            }
-
-            if (hunger == 2)
-            {
-                leds[0].material = lit;
-                leds[1].material = lit;
-            }
-
-            if (hunger == 3)
-            {
-                leds[0].material = lit;
-                leds[1].material = lit;
-                leds[2].material = lit;
-            }
-
-            if (hunger == 4)
-            {
-                leds[0].material = lit;
-                leds[1].material = lit;
-                leds[2].material = lit;
-                leds[3].material = lit;
-            }
+            for (int i = 0; i < hunger; i++)
+                leds[i].material = lit;
 
             if (hunger == 5)
             {
                 Module.HandleStrike();
-                DebugMsg("You didn't eat a cookie. You starved to death! STRIKE!");
+                Debug.LogFormat("[Cookie Jars #{0}] You didn't eat a cookie. You starved to death! STRIKE!", _moduleId);
 
                 StartCoroutine("HungerAnimation");
             }
@@ -459,16 +316,13 @@ public class cookieJarsScript : MonoBehaviour
         {
             jarTransform.transform.Rotate(Vector3.down, 15 * spinDirection);
             yield return new WaitForSeconds(.005f);
-
             if (i == 12)
-            {
                 jarText.text = cookieNames[cookies[shownJar]];
-            }
         }
     }
 
     //twitch plays
-#pragma warning restore 414
+#pragma warning disable 414
     private readonly string TwitchHelpMessage = @"!{0} cycle will cycle through the jars. !{0} eat will eat a cookie from the jar. !{0} left/!{0} right move to the left/right jars respectively.";
 #pragma warning restore 414
     IEnumerator ProcessTwitchCommand(string cmd)
@@ -507,41 +361,6 @@ public class cookieJarsScript : MonoBehaviour
             right.OnInteract();
             yield break;
         }
-
-        /** old tp code
-        if (cmd.ToLowerInvariant() == "cycle")
-        {
-            yield return null;
-            yield return new KMSelectable[] { right };
-            yield return new WaitForSeconds(2.5f);
-            yield return new KMSelectable[] { right };
-            yield return new WaitForSeconds(2.5f);
-            yield return new KMSelectable[] { right };
-            yield return new WaitForSeconds(1f);
-        }
-
-        else if (cmd.ToLowerInvariant() == "eat")
-        {
-            yield return null;
-            yield return new KMSelectable[] { jar };
-        }
-
-        else if (cmd.ToLowerInvariant() == "left")
-        {
-            yield return null;
-            yield return new KMSelectable[] { left };
-        }
-
-        else if (cmd.ToLowerInvariant() == "right")
-        {
-            yield return null;
-            yield return new KMSelectable[] { right };
-        }
-
-        else
-        {
-            yield break;
-        }*/
     }
 
     IEnumerator TwitchHandleForcedSolve()
@@ -567,19 +386,11 @@ public class cookieJarsScript : MonoBehaviour
         for (int i = 0; i < cookies.Length; i++)
         {
             if (cookies[i] > cookies[(i + 1) % cookies.Length] && cookies[i] > cookies[(i + 2) % cookies.Length])
-            {
                 highestCookie = i;
-            }
-
             else if (cookies[i] > cookies[(i + 1) % cookies.Length] || cookies[i] > cookies[(i + 2) % cookies.Length])
-            {
                 secondHighestCookie = i;
-            }
-
             else
-            {
                 lowestCookie = i;
-            }
         }
 
         float averageCookies = Info.GetSolvableModuleNames().Count / 10f;
@@ -620,28 +431,17 @@ public class cookieJarsScript : MonoBehaviour
         jarText.text = cookieNames[cookies[shownJar]];
 
         if (cookieAmounts[shownJar] == 0)
-        {
             cookieAmountText.text = "[ No cookies! :( ]";
-        }
-
         else if (cookieAmounts[shownJar] == 1)
-        {
             cookieAmountText.text = "[ 1 cookie! :| ]";
-        }
-
         else
-        {
             cookieAmountText.text = "[ " + cookieAmounts[shownJar] + " cookies! :) ]";
-        }
-
         lastEaten = Info.GetSerialNumberNumbers().First();
         lastLastEaten = Info.GetSerialNumberNumbers().Skip(1).First();
 
         for (int i = 0; i < 3; i++)
-        {
-            DebugMsg("One of the jars has " + cookieAmounts[i] + " " + cookieNames[cookies[i]].Replace("\n", " ") + " inside.");
-        }
+            Debug.LogFormat("[Cookie Jars #{0}] One of the jars has {1} {2} inside.", _moduleId, cookieAmounts[i], cookieNames[cookies[i]].Replace("\n", " "));
 
-        DebugMsg("The last eaten cookie was a " + debugCookies[lastEaten] + " cookie and the cookie eaten before that was a " + debugCookies[lastLastEaten] + " cookie.");
+        Debug.LogFormat("[Cookie Jars #{0}] The last eaten cookie was a{3} {1} cookie and the cookie eaten before that was a{4} {2} cookie.", _moduleId, cookieNamesLog[lastEaten], cookieNamesLog[lastLastEaten], cookieNamesLog[lastEaten] == "OREO" ? "n" : "", cookieNamesLog[lastLastEaten] == "OREO" ? "n" : "");
     }
 }
